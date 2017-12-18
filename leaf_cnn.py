@@ -22,7 +22,7 @@ from sklearn.model_selection import train_test_split
 
 tf.logging.set_verbosity(tf.logging.INFO)
 img_size = 224
-batch_size = 20
+batch_size = 50
 label_dict1 = {
 	'Black-grass' : 0 ,
 	'Charlock' : 1,
@@ -100,10 +100,10 @@ def cnn_model_fn(features, labels, mode):
 	dense1 = tf.layers.dense(inputs=pool_flat, units=1024, activation=tf.nn.relu)
 	dense2 = tf.layers.dense(inputs=dense1, units=512, activation=tf.nn.relu)
 	dense3 = tf.layers.dense(inputs=dense2, units=128, activation=tf.nn.relu)
-	dropout_last = tf.layers.dropout(inputs=dense3, rate=0.2 , training=mode == tf.estimator.ModeKeys.TRAIN)
+	dropout_last = tf.layers.dropout(inputs=dense3, rate=0.4 , training=mode == tf.estimator.ModeKeys.TRAIN)
 
 	# Logits Layer
-	logits = tf.layers.dense(inputs=dropout_last, units=2)
+	logits = tf.layers.dense(inputs=dropout_last, units=12)
 
 	predictions = {
 		# Generate predictions (for PREDICT and EVAL mode)
@@ -117,12 +117,12 @@ def cnn_model_fn(features, labels, mode):
 		return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 
 	# Calculate Loss (for both TRAIN and EVAL modes)
-	onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=2)
+	onehot_labels = tf.one_hot(indices=tf.cast(labels, tf.int32), depth=12)
 	loss = tf.losses.softmax_cross_entropy(onehot_labels=onehot_labels, logits=logits)
 	
 	# Configure the Training Op (for TRAIN mode)
 	if mode == tf.estimator.ModeKeys.TRAIN:
-		optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0001)
+		optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.03)
 		train_op = optimizer.minimize(loss=loss,global_step=tf.train.get_global_step())
 		return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
 
